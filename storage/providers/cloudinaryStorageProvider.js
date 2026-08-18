@@ -1,38 +1,60 @@
 const cloudinary = require('cloudinary').v2;
 const https = require('https');
 const http = require('http');
+const LocalStorageProvider = require('./localStorageProvider');
 
 /**
  * Cloudinary Storage Provider
- * Permanent free cloud storage for photos and videos.
- * Preserves media across all server deployments and container restarts.
+ * Permanent free cloud storage for photos and videos with automatic local fallback.
  */
 class CloudinaryStorageProvider {
   constructor() {
-    const rawUrl = (process.env.CLOUDINARY_URL || '').trim().replace(/^['"]|['"]$/g, '');
+    this.fallbackLocal = new LocalStorageProvider();
+    this.isConfigured = false;
+
+    let rawUrl = (process.env.CLOUDINARY_URL || '').trim();
+    // Clean any accidental "export" or "CLOUDINARY_URL=" prefix or quotes
+    rawUrl = rawUrl.replace(/^export\s+/i, '').replace(/^CLOUDINARY_URL\s*=\s*/i, '');
+    rawUrl = rawUrl.replace(/^['"]+|['"]+$/g, '').trim();
 
     if (rawUrl && rawUrl.startsWith('cloudinary://')) {
-      const match = rawUrl.match(/^cloudinary:\/\/([^:]+):([^@]+)@(.+)$/);
-      if (match) {
-        cloudinary.config({
-          api_key: match[1].trim(),
-          api_secret: match[2].trim(),
-          cloud_name: match[3].trim(),
-          secure: true
-        });
-        console.log(`[CloudinaryStorageProvider] Configured for cloud: ${match[3].trim()}`);
-      } else {
-        cloudinary.config(true);
+      try {
+        const withoutPrefix = rawUrl.substring('cloudinary://'.length);
+        const atIndex = withoutPrefix.lastIndexOf('@');
+        if (atIndex !== -1) {
+          const authPart = withoutPrefix.substring(0, atIndex);
+          const cloudName = withoutPrefix.substring(atIndex + 1).trim();
+          const colonIndex = authPart.indexOf(':');
+          if (colonIndex !== -1) {
+            const apiKey = authPart.substring(0, colonIndex).trim();
+            const apiSecret = decodeURIComponent(authPart.substring(colonIndex + 1).trim());
+
+            cloudinary.config({
+              cloud_name: cloudName,
+              api_key: apiKey,
+              api_secret: apiSecret,
+              secure: true
+            });
+            this.isConfigured = true;
+            console.log(`[CloudinaryStorageProvider] Configured successfully for cloud: "${cloudName}"`);
+          }
+        }
+      } catch (e) {
+        console.warn('[CloudinaryStorageProvider] Error parsing CLOUDINARY_URL:', e.message);
       }
-    } else if (process.env.CLOUDINARY_CLOUD_NAME) {
+    } else if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
       cloudinary.config({
-        cloud_name: (process.env.CLOUDINARY_CLOUD_NAME || '').trim(),
-        api_key: (process.env.CLOUDINARY_API_KEY || '').trim(),
-        api_secret: (process.env.CLOUDINARY_API_SECRET || '').trim(),
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME.trim(),
+        api_key: process.env.CLOUDINARY_API_KEY.trim(),
+        api_secret: process.env.CLOUDINARY_API_SECRET.trim(),
         secure: true
       });
-    } else {
-      cloudinary.config(true);
+      this.isConfigured = true;
+      console.log(`[CloudinaryStorageProvider] Configured via discrete keys for cloud: "${process.env.CLOUDINARY_CLOUD_NAME.trim()}"`);
+    }
+
+    if (!this.isConfigured) {
+      console.warn('[CloudinaryStorageProvider] Cloudinary credentials not fully recognized, fallback to Local Storage enabled.');
     }
   }
 
@@ -41,7 +63,7 @@ class CloudinaryStorageProvider {
   }
 
   /**
-   * Upload buffer to Cloudinary
+   * Upload buffer to Cloudinary with safe local fallback
    */
   async saveFile(buffer, filename, mimeType, folder = 'uploads') {
     const isVideo = mimeType && mimeType.startsWith('video');
@@ -49,32 +71,40 @@ class CloudinaryStorageProvider {
     const folderPath = `wedding_disposable/${folder}`;
     const cleanPublicId = filename.replace(/\.[^/.]+$/, '');
 
-    return new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        {
-          folder: folderPath,
-          public_id: cleanPublicId,
-          resource_type: resourceType,
-          overwrite: true
-        },
-        (error, result) => {
-          if (error) {
-            console.error('[CloudinaryStorageProvider] Upload error:', error);
-            return reject(error);
-          }
-          resolve({
-            path: result.secure_url,
-            url: result.secure_url,
-            publicId: result.public_id,
-            bytes: result.bytes,
-            width: result.width,
-            height: result.height
-          });
-        }
-      );
+    try {
+      if (!this.isConfigured) {
+        throw new Error('Cloudinary not configured');
+      }
 
-      uploadStream.end(buffer);
-    });
+      return await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          {
+            folder: folderPath,
+            public_id: cleanPublicId,
+            resource_type: resourceType,
+            overwrite: true
+          },
+          (error, result) => {
+            if (error) {
+              return reject(error);
+            }
+            resolve({
+              path: result.secure_url,
+              url: result.secure_url,
+              publicId: result.public_id,
+              bytes: result.bytes,
+              width: result.width,
+              height: result.height
+            });
+          }
+        );
+
+        uploadStream.end(buffer);
+      });
+    } catch (cloudErr) {
+      console.warn(`[CloudinaryStorageProvider] Cloud upload notice (${cloudErr.message}), saving to local storage fallback.`);
+      return await this.fallbackLocal.saveFile(buffer, filename, mimeType, folder);
+    }
   }
 
   /**
@@ -135,6 +165,9 @@ class CloudinaryStorageProvider {
     if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
       return filePath;
     }
+    if (filePath.startsWith('uploads/') || filePath.startsWith('thumbnails/')) {
+      return this.fallbackLocal.getFileUrl(filePath);
+    }
     return cloudinary.url(filePath, { secure: true });
   }
 
@@ -142,6 +175,9 @@ class CloudinaryStorageProvider {
    * Fetch stream for bulk ZIP download
    */
   async getFileStream(filePath) {
+    if (filePath.startsWith('uploads/') || filePath.startsWith('thumbnails/')) {
+      return await this.fallbackLocal.getFileStream(filePath);
+    }
     const url = this.getFileUrl(filePath);
     return new Promise((resolve, reject) => {
       const client = url.startsWith('https') ? https : http;
