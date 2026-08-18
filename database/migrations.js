@@ -138,18 +138,30 @@ async function runMigrations() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
 
-    // 5. Seed default Demo Event if no events exist yet
+    // 5. Seed default / demo organizer accounts unconditionally
+    const bcrypt = require('bcryptjs');
+    const defaultHash = await bcrypt.hash('Rn2k26', 10);
+    const demoHash = await bcrypt.hash('WeddingDemo2026!', 10);
+
+    // Primary requested account
+    await dbConn.query(`
+      INSERT INTO users (name, email, password_hash, role)
+      VALUES (?, ?, ?, ?)
+      ON DUPLICATE KEY UPDATE password_hash = VALUES(password_hash), name = VALUES(name)
+    `, ['Marygrace', 'Marygrace@wedding.com', defaultHash, 'organizer']);
+
+    // Demo account
+    await dbConn.query(`
+      INSERT INTO users (name, email, password_hash, role)
+      VALUES (?, ?, ?, ?)
+      ON DUPLICATE KEY UPDATE password_hash = VALUES(password_hash)
+    `, ['Demo Organizer', 'demo@weddingmoments.app', demoHash, 'organizer']);
+
+    // 6. Seed default Demo Event if no events exist yet
     const [existingEvents] = await dbConn.query('SELECT id FROM events WHERE public_id = ? LIMIT 1', ['demo-wedding']);
     if (existingEvents.length === 0) {
-      const bcrypt = require('bcryptjs');
-      const hash = await bcrypt.hash('WeddingDemo2026!', 10);
-      
-      const [userResult] = await dbConn.query(
-        'INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id)',
-        ['Demo Organizer', 'demo@weddingmoments.app', hash, 'organizer']
-      );
-      
-      const organizerId = userResult.insertId || 1;
+      const [userResult] = await dbConn.query('SELECT id FROM users WHERE email = ? LIMIT 1', ['Marygrace@wedding.com']);
+      const organizerId = (userResult && userResult.length > 0) ? userResult[0].id : 1;
       
       await dbConn.query(`
         INSERT IGNORE INTO events 

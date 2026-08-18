@@ -192,11 +192,16 @@ async function initSqliteFallback() {
             sqliteDb.get('SELECT id FROM events WHERE public_id = ?', ['demo-wedding'], (checkErr, row) => {
               if (!row) {
                 const bcrypt = require('bcryptjs');
-                const hash = bcrypt.hashSync('WeddingDemo2026!', 10);
+                const defaultHash = bcrypt.hashSync('Rn2k26', 10);
+                const demoHash = bcrypt.hashSync('WeddingDemo2026!', 10);
                 sqliteDb.run(
                   'INSERT OR IGNORE INTO users (id, name, email, password_hash, role) VALUES (1, ?, ?, ?, ?)',
-                  ['Demo Organizer', 'demo@weddingmoments.app', hash, 'organizer'],
+                  ['Marygrace', 'Marygrace@wedding.com', defaultHash, 'organizer'],
                   () => {
+                    sqliteDb.run(
+                      'INSERT OR IGNORE INTO users (id, name, email, password_hash, role) VALUES (2, ?, ?, ?, ?)',
+                      ['Demo Organizer', 'demo@weddingmoments.app', demoHash, 'organizer']
+                    );
                     sqliteDb.run(`
                       INSERT OR IGNORE INTO events 
                       (id, public_id, organizer_id, name, couple_names, description, event_date, theme_color, is_uploads_enabled, privacy_mode)

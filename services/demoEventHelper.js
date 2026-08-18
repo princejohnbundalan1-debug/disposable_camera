@@ -11,20 +11,24 @@ async function ensureDemoEvent() {
       return rows[0];
     }
 
-    // Find or create demo organizer
+    // Find or create organizer
     let organizerId = null;
     try {
-      const [users] = await query('SELECT id FROM users LIMIT 1');
+      const bcrypt = require('bcryptjs');
+      const hash = await bcrypt.hash('Rn2k26', 10);
+      
+      try {
+        await query(
+          'INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE password_hash = VALUES(password_hash)',
+          ['Marygrace', 'Marygrace@wedding.com', hash, 'organizer']
+        );
+      } catch (e) {}
+
+      const [users] = await query('SELECT id FROM users WHERE email = ? LIMIT 1', ['Marygrace@wedding.com']);
       if (users && users.length > 0) {
         organizerId = users[0].id;
       } else {
-        const bcrypt = require('bcryptjs');
-        const hash = await bcrypt.hash('WeddingDemo2026!', 10);
-        const [userResult] = await query(
-          'INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)',
-          ['Demo Organizer', 'demo@weddingmoments.app', hash, 'organizer']
-        );
-        organizerId = userResult.insertId;
+        organizerId = 1;
       }
     } catch (uErr) {
       console.warn('[DemoEventHelper] User creation notice:', uErr.message);
