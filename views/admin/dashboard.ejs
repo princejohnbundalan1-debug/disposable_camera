@@ -19,7 +19,7 @@
       <!-- Dashboard Top Header -->
       <div class="dashboard-header">
         <div>
-          <h1>Welcome, <%= user.name %>! 💍</h1>
+          <h1>Welcome, <%= (typeof user !== 'undefined' && user && user.name) ? user.name : 'Organizer' %>! 💍</h1>
           <p style="color: var(--color-muted);">Manage your wedding disposable cameras, table QR codes, and photo rolls.</p>
         </div>
 

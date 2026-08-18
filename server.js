@@ -20,6 +20,9 @@ const apiRoutes = require('./routes/apiRoutes');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust reverse proxy (Crucial for Render, Vercel, Heroku HTTPS sessions)
+app.set('trust proxy', 1);
+
 // Security & Logging
 app.use(helmetConfig);
 if (process.env.NODE_ENV !== 'test') {
@@ -71,7 +74,7 @@ app.use(
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: 'auto',
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     }
