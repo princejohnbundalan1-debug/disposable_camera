@@ -122,7 +122,7 @@ class CloudinaryStorageProvider {
   }
 
   /**
-   * Test Cloudinary connection by uploading a tiny 1x1 test image
+   * Test Cloudinary connection using the API ping endpoint (uses HTTP Basic auth, no HMAC signature).
    */
   async testConnection() {
     this.ensureConfig();
@@ -130,24 +130,11 @@ class CloudinaryStorageProvider {
       return { success: false, message: 'Cloudinary credentials not configured' };
     }
 
-    const testPngBuffer = Buffer.from(
-      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
-      'base64'
-    );
-
     try {
-      const { Readable } = require('stream');
-      const result = await new Promise((resolve, reject) => {
-        const uploadStream = cloudinary.uploader.upload_stream(
-          { folder: 'wedding_disposable/test' },
-          (error, res) => (error ? reject(error) : resolve(res))
-        );
-        Readable.from(testPngBuffer).pipe(uploadStream);
-      });
-
-      return { success: true, url: result.secure_url, details: result };
+      const result = await cloudinary.api.ping();
+      return { success: true, status: result.status, details: result };
     } catch (err) {
-      return { success: false, error: err.message || err };
+      return { success: false, error: err.message || String(err) };
     }
   }
 
@@ -158,13 +145,10 @@ class CloudinaryStorageProvider {
     const isVideo = mimeType && mimeType.startsWith('video');
     const resourceType = isVideo ? 'video' : 'image';
     const folderPath = `wedding_disposable/${folder}`;
-    const cleanPublicId = filename.replace(/\.[^/.]+$/, '');
 
     const result = await cloudinary.uploader.upload(tempPath, {
       folder: folderPath,
-      public_id: cleanPublicId,
-      resource_type: resourceType,
-      overwrite: true
+      resource_type: resourceType
     });
 
     return {
