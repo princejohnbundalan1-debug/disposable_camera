@@ -19,7 +19,8 @@ const helmetConfig = helmet({
       upgradeInsecureRequests: null
     }
   },
-  crossOriginEmbedderPolicy: false
+  crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: { policy: 'cross-origin' }
 });
 
 /**

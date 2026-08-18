@@ -32,8 +32,32 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Static asset folders
 app.use(express.static(path.join(__dirname, 'public')));
-// Storage files (photos & thumbnails)
+
+// Storage files (photos & thumbnails) with robust fallback
 app.use('/storage-files', express.static(path.join(__dirname, 'storage')));
+app.get('/storage-files/:folder/:filename', (req, res) => {
+  const { folder, filename } = req.params;
+  const safeFilename = path.basename(filename);
+  const filePath = path.join(__dirname, 'storage', folder, safeFilename);
+  const fs = require('fs');
+
+  if (fs.existsSync(filePath)) {
+    return res.sendFile(filePath);
+  }
+
+  // Graceful fallback SVG for images reset across ephemeral server restarts
+  res.setHeader('Content-Type', 'image/svg+xml');
+  res.setHeader('Cache-Control', 'public, max-age=3600');
+  return res.send(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
+      <rect width="400" height="400" fill="#1C221E" rx="16"/>
+      <circle cx="200" cy="170" r="55" fill="#C5A880" opacity="0.15"/>
+      <text x="200" y="185" font-size="44" text-anchor="middle" fill="#C5A880">💍</text>
+      <text x="200" y="255" font-size="16" font-family="sans-serif" font-weight="700" text-anchor="middle" fill="#F4EDE2">Wedding Moment</text>
+      <text x="200" y="280" font-size="12" font-family="sans-serif" text-anchor="middle" fill="#8E9791">Captured by Wedding Guest</text>
+    </svg>
+  `);
+});
 
 // View Engine
 app.set('views', path.join(__dirname, 'views'));

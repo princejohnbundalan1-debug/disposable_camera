@@ -65,7 +65,7 @@
             
             <div class="gallery-thumb-wrapper">
               <% if (item.media_type === 'photo') { %>
-                <img src="<%= item.thumbnailUrl || item.url %>" alt="Wedding Moment" class="gallery-thumb" loading="lazy">
+                <img src="<%= item.thumbnailUrl || item.url %>" alt="Wedding Moment" class="gallery-thumb" loading="lazy" onerror="if(this.src!=='<%= item.url %>' && '<%= item.url %>') { this.src='<%= item.url %>'; }">
               <% } else { %>
                 <video src="<%= item.url %>" class="gallery-thumb" muted preload="metadata"></video>
                 <div class="media-badge">🎥 VIDEO</div>
