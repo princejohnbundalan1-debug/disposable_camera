@@ -17,10 +17,12 @@ router.get('/cloudinary-test', async (req, res) => {
   try {
     const CloudinaryStorageProvider = require('../storage/providers/cloudinaryStorageProvider');
     const provider = new CloudinaryStorageProvider();
+    const configDebug = provider.getConfigDebug();
     const testResult = await provider.testConnection();
     res.json({
       status: testResult.success ? 'connected' : 'error',
       provider: provider.getName(),
+      config: configDebug,
       result: testResult
     });
   } catch (e) {

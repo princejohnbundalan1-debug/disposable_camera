@@ -30,7 +30,10 @@ class CloudinaryStorageProvider {
           const colonIndex = authPart.indexOf(':');
           if (colonIndex !== -1) {
             const apiKey = authPart.substring(0, colonIndex).trim();
-            const apiSecret = decodeURIComponent(authPart.substring(colonIndex + 1).trim());
+            let apiSecret = authPart.substring(colonIndex + 1).trim();
+            try {
+              apiSecret = decodeURIComponent(apiSecret);
+            } catch (_) {}
 
             cloudinary.config({
               cloud_name: cloudName,
@@ -53,6 +56,20 @@ class CloudinaryStorageProvider {
       });
       this.isConfigured = true;
     }
+  }
+
+  getConfigDebug() {
+    this.ensureConfig();
+    const conf = cloudinary.config();
+    return {
+      isConfigured: this.isConfigured,
+      cloud_name: conf.cloud_name || null,
+      api_key: conf.api_key || null,
+      api_secret_present: !!conf.api_secret,
+      api_secret_len: conf.api_secret ? conf.api_secret.length : 0,
+      api_secret_first4: conf.api_secret ? conf.api_secret.substring(0, 4) : null,
+      api_secret_last4: conf.api_secret ? conf.api_secret.slice(-4) : null
+    };
   }
 
   getName() {
