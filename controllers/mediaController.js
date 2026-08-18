@@ -220,8 +220,8 @@ class MediaController {
 
       const mediaItem = rows[0];
 
-      // Verify ownership
-      if (mediaItem.organizer_id !== req.session.user.id && req.session.user.role !== 'admin') {
+      // Verify ownership (allow demo-wedding or matching organizer or admin)
+      if (mediaItem.organizer_id !== req.session.user.id && req.session.user.role !== 'admin' && mediaItem.public_id !== 'demo-wedding') {
         return res.status(403).json({ success: false, message: 'Permission denied.' });
       }
 

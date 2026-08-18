@@ -49,8 +49,8 @@ async function requireEventOwnership(req, res, next) {
 
     const event = rows[0];
 
-    // Verify ownership
-    if (event.organizer_id !== req.session.user.id && req.session.user.role !== 'admin') {
+    // Verify ownership (allow demo-wedding for logged in organizers)
+    if (event.organizer_id !== req.session.user.id && req.session.user.role !== 'admin' && event.public_id !== 'demo-wedding') {
       if (req.xhr || req.headers.accept?.includes('json')) {
         return res.status(403).json({ success: false, message: 'Unauthorized access to event' });
       }

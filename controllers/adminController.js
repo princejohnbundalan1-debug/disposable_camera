@@ -9,13 +9,13 @@ class AdminController {
     const userId = req.session.user.id;
 
     try {
-      // 1. Fetch all events belonging to organizer
+      // 1. Fetch all events belonging to organizer (and demo-wedding so organizers can moderate demo photos immediately)
       const [events] = await query(
         `SELECT e.*,
           (SELECT COUNT(*) FROM media WHERE event_id = e.id AND status = 'active') as media_count,
           (SELECT COUNT(*) FROM messages WHERE event_id = e.id AND status = 'visible') as messages_count
          FROM events e
-         WHERE e.organizer_id = ?
+         WHERE e.organizer_id = ? OR e.public_id = 'demo-wedding'
          ORDER BY e.created_at DESC`,
         [userId]
       );
@@ -29,7 +29,7 @@ class AdminController {
           COALESCE(SUM(m.file_size), 0) as total_bytes
          FROM media m
          JOIN events e ON m.event_id = e.id
-         WHERE e.organizer_id = ? AND m.status = 'active'`,
+         WHERE (e.organizer_id = ? OR e.public_id = 'demo-wedding') AND m.status = 'active'`,
         [userId]
       );
 
@@ -37,7 +37,7 @@ class AdminController {
         `SELECT COUNT(msg.id) as total_messages
          FROM messages msg
          JOIN events e ON msg.event_id = e.id
-         WHERE e.organizer_id = ? AND msg.status = 'visible'`,
+         WHERE (e.organizer_id = ? OR e.public_id = 'demo-wedding') AND msg.status = 'visible'`,
         [userId]
       );
 
@@ -46,7 +46,7 @@ class AdminController {
         `SELECT m.*, e.name as event_name, e.public_id as event_public_id
          FROM media m
          JOIN events e ON m.event_id = e.id
-         WHERE e.organizer_id = ? AND m.status = 'active'
+         WHERE (e.organizer_id = ? OR e.public_id = 'demo-wedding') AND m.status = 'active'
          ORDER BY m.uploaded_at DESC
          LIMIT 10`,
         [userId]

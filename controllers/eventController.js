@@ -29,7 +29,7 @@ class EventController {
           (SELECT COUNT(*) FROM media WHERE event_id = e.id AND status = 'active') as media_count,
           (SELECT COUNT(*) FROM messages WHERE event_id = e.id AND status = 'visible') as messages_count
          FROM events e 
-         WHERE e.organizer_id = ? 
+         WHERE e.organizer_id = ? OR e.public_id = 'demo-wedding'
          ORDER BY e.created_at DESC`,
         [req.session.user.id]
       );
