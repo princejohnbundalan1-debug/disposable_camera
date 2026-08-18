@@ -134,7 +134,15 @@ class CloudinaryStorageProvider {
       const result = await cloudinary.api.ping();
       return { success: true, status: result.status, details: result };
     } catch (err) {
-      return { success: false, error: err.message || String(err) };
+      // Serialize full error for diagnostics
+      const errDetails = {
+        message: err.message,
+        http_code: err.http_code,
+        name: err.name,
+        error: err.error,
+        raw: JSON.stringify(err)
+      };
+      return { success: false, error: errDetails };
     }
   }
 
