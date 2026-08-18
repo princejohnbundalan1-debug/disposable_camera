@@ -9,17 +9,30 @@ const http = require('http');
  */
 class CloudinaryStorageProvider {
   constructor() {
-    if (process.env.CLOUDINARY_URL) {
-      cloudinary.config({
-        cloudinary_url: process.env.CLOUDINARY_URL
-      });
+    const rawUrl = (process.env.CLOUDINARY_URL || '').trim().replace(/^['"]|['"]$/g, '');
+
+    if (rawUrl && rawUrl.startsWith('cloudinary://')) {
+      const match = rawUrl.match(/^cloudinary:\/\/([^:]+):([^@]+)@(.+)$/);
+      if (match) {
+        cloudinary.config({
+          api_key: match[1].trim(),
+          api_secret: match[2].trim(),
+          cloud_name: match[3].trim(),
+          secure: true
+        });
+        console.log(`[CloudinaryStorageProvider] Configured for cloud: ${match[3].trim()}`);
+      } else {
+        cloudinary.config(true);
+      }
     } else if (process.env.CLOUDINARY_CLOUD_NAME) {
       cloudinary.config({
-        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-        api_key: process.env.CLOUDINARY_API_KEY,
-        api_secret: process.env.CLOUDINARY_API_SECRET,
+        cloud_name: (process.env.CLOUDINARY_CLOUD_NAME || '').trim(),
+        api_key: (process.env.CLOUDINARY_API_KEY || '').trim(),
+        api_secret: (process.env.CLOUDINARY_API_SECRET || '').trim(),
         secure: true
       });
+    } else {
+      cloudinary.config(true);
     }
   }
 
