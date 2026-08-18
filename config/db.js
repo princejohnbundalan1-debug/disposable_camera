@@ -1,5 +1,4 @@
 const mysql = require('mysql2/promise');
-const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const fs = require('fs');
 const { runMigrations } = require('../database/migrations');
@@ -64,6 +63,14 @@ async function initDatabase() {
  * Initialize SQLite Fallback with identical tables
  */
 async function initSqliteFallback() {
+  let sqlite3Module;
+  try {
+    sqlite3Module = require('sqlite3').verbose();
+  } catch (e) {
+    console.error('[Database] SQLite3 is not installed in this environment and MySQL connection failed.');
+    throw new Error('Database connection failed. Please provide a valid DATABASE_URL or MySQL connection.');
+  }
+
   const storageDir = path.resolve(__dirname, '../storage');
   if (!fs.existsSync(storageDir)) {
     fs.mkdirSync(storageDir, { recursive: true });
@@ -73,7 +80,7 @@ async function initSqliteFallback() {
   isSqliteMode = true;
 
   return new Promise((resolve, reject) => {
-    sqliteDb = new sqlite3.Database(dbPath, (err) => {
+    sqliteDb = new sqlite3Module.Database(dbPath, (err) => {
       if (err) {
         console.error('[Database SQLite] Error opening SQLite database:', err);
         return reject(err);
