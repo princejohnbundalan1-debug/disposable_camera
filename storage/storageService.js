@@ -2,6 +2,7 @@ const path = require('path');
 const LocalStorageProvider = require('./providers/localStorageProvider');
 const S3StorageProvider = require('./providers/s3StorageProvider');
 const SupabaseStorageProvider = require('./providers/supabaseStorageProvider');
+const CloudinaryStorageProvider = require('./providers/cloudinaryStorageProvider');
 
 /**
  * Abstract Storage Service Factory
@@ -9,9 +10,23 @@ const SupabaseStorageProvider = require('./providers/supabaseStorageProvider');
  */
 class StorageService {
   constructor() {
-    const providerType = (process.env.STORAGE_PROVIDER || 'local').toLowerCase();
+    let providerType = (process.env.STORAGE_PROVIDER || '').toLowerCase();
+
+    // Auto-detect Cloudinary if CLOUDINARY_URL or CLOUDINARY_CLOUD_NAME is present
+    if (!providerType) {
+      if (process.env.CLOUDINARY_URL || process.env.CLOUDINARY_CLOUD_NAME) {
+        providerType = 'cloudinary';
+      } else if (process.env.SUPABASE_URL && process.env.SUPABASE_KEY) {
+        providerType = 'supabase';
+      } else {
+        providerType = 'local';
+      }
+    }
 
     switch (providerType) {
+      case 'cloudinary':
+        this.provider = new CloudinaryStorageProvider();
+        break;
       case 's3':
       case 'r2':
         this.provider = new S3StorageProvider();
