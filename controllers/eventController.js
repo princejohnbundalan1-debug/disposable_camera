@@ -228,7 +228,14 @@ class EventController {
     const { publicId } = req.params;
 
     try {
-      const [rows] = await query('SELECT * FROM events WHERE public_id = ?', [publicId]);
+      let [rows] = await query('SELECT * FROM events WHERE public_id = ?', [publicId]);
+      
+      if ((!rows || rows.length === 0) && publicId === 'demo-wedding') {
+        const { ensureDemoEvent } = require('../services/demoEventHelper');
+        const demoEvent = await ensureDemoEvent();
+        if (demoEvent) rows = [demoEvent];
+      }
+
       if (!rows || rows.length === 0) {
         return res.status(404).render('partials/error', {
           title: 'Wedding Event Not Found',
@@ -238,35 +245,61 @@ class EventController {
 
       const event = rows[0];
 
-      // Fetch quick stats & recent 8 media items for preview
-      const [recentMedia] = await query(
-        `SELECT * FROM media WHERE event_id = ? AND status = 'active' ORDER BY uploaded_at DESC LIMIT 12`,
-        [event.id]
-      );
+      let recentMedia = [];
+      let totalMedia = 0;
+      let totalPhotos = 0;
+      let totalVideos = 0;
+      let totalMessages = 0;
 
-      const [counts] = await query(
-        `SELECT 
-          COUNT(*) as total_media,
-          SUM(CASE WHEN media_type = 'photo' THEN 1 ELSE 0 END) as total_photos,
-          SUM(CASE WHEN media_type = 'video' THEN 1 ELSE 0 END) as total_videos
-         FROM media WHERE event_id = ? AND status = 'active'`,
-        [event.id]
-      );
+      try {
+        const [mediaRows] = await query(
+          `SELECT * FROM media WHERE event_id = ? AND status = 'active' ORDER BY uploaded_at DESC LIMIT 12`,
+          [event.id]
+        );
+        recentMedia = mediaRows || [];
+      } catch (e) {
+        console.warn('[EventController] Recent media query notice:', e.message);
+      }
 
-      const [msgCount] = await query(
-        `SELECT COUNT(*) as total_messages FROM messages WHERE event_id = ? AND status = 'visible'`,
-        [event.id]
-      );
+      try {
+        const [counts] = await query(
+          `SELECT 
+            COUNT(*) as total_media,
+            COALESCE(SUM(CASE WHEN media_type = 'photo' THEN 1 ELSE 0 END), 0) as total_photos,
+            COALESCE(SUM(CASE WHEN media_type = 'video' THEN 1 ELSE 0 END), 0) as total_videos
+           FROM media WHERE event_id = ? AND status = 'active'`,
+          [event.id]
+        );
+        if (counts && counts[0]) {
+          totalMedia = Number(counts[0].total_media) || 0;
+          totalPhotos = Number(counts[0].total_photos) || 0;
+          totalVideos = Number(counts[0].total_videos) || 0;
+        }
+      } catch (e) {
+        console.warn('[EventController] Media count query notice:', e.message);
+      }
+
+      try {
+        const [msgCount] = await query(
+          `SELECT COUNT(*) as total_messages FROM messages WHERE event_id = ? AND status = 'visible'`,
+          [event.id]
+        );
+        if (msgCount && msgCount[0]) {
+          totalMessages = Number(msgCount[0].total_messages) || 0;
+        }
+      } catch (e) {
+        console.warn('[EventController] Message count query notice:', e.message);
+      }
 
       res.render('guest/event', {
         title: `${event.name} | Digital Disposable Camera`,
         event,
         recentMedia,
         stats: {
-          totalMedia: counts[0]?.total_media || 0,
-          totalPhotos: counts[0]?.total_photos || 0,
-          totalVideos: counts[0]?.total_videos || 0,
-          totalMessages: msgCount[0]?.total_messages || 0
+          totalMedia,
+          totalPhotos,
+          totalVideos,
+          totalMessages
         },
         error: req.flash('error'),
         success: req.flash('success')

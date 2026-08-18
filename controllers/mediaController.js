@@ -13,7 +13,12 @@ class MediaController {
 
     try {
       // 1. Fetch and validate event
-      const [events] = await query('SELECT * FROM events WHERE public_id = ?', [publicId]);
+      let [events] = await query('SELECT * FROM events WHERE public_id = ?', [publicId]);
+      if ((!events || events.length === 0) && publicId === 'demo-wedding') {
+        const { ensureDemoEvent } = require('../services/demoEventHelper');
+        const demo = await ensureDemoEvent();
+        if (demo) events = [demo];
+      }
       if (!events || events.length === 0) {
         return res.status(404).json({ success: false, message: 'Event not found.' });
       }
@@ -107,10 +112,16 @@ class MediaController {
     const { publicId } = req.params;
 
     try {
-      const [events] = await query('SELECT * FROM events WHERE public_id = ?', [publicId]);
+      let [events] = await query('SELECT * FROM events WHERE public_id = ?', [publicId]);
+      if ((!events || events.length === 0) && publicId === 'demo-wedding') {
+        const { ensureDemoEvent } = require('../services/demoEventHelper');
+        const demo = await ensureDemoEvent();
+        if (demo) events = [demo];
+      }
+
       if (!events || events.length === 0) {
         return res.status(404).render('partials/error', {
-          title: 'Event Not Found',
+          title: 'Album Not Found',
           message: 'The requested wedding album could not be found.'
         });
       }
