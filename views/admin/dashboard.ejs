@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/gallery.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22><text y=%2226%22 font-size=%2224%22>💍</text></svg>">
+</head>
+<body>
+  <%- include('../partials/header') %>
+  <%- include('../partials/flash') %>
+
+  <main style="flex: 1; padding: 2.5rem 0;">
+    <div class="container">
+      <!-- Dashboard Top Header -->
+      <div class="dashboard-header">
+        <div>
+          <h1>Welcome, <%= user.name %>! 💍</h1>
+          <p style="color: var(--color-muted);">Manage your wedding disposable cameras, table QR codes, and photo rolls.</p>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem;">
+          <a href="/admin/events/create" class="btn btn-primary">
+            <span>+ Create New Wedding</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Stat Metrics Grid -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">📷</div>
+          <div>
+            <div class="stat-value"><%= stats.totalPhotos %></div>
+            <div class="stat-label">Photos Captured</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">🎥</div>
+          <div>
+            <div class="stat-value"><%= stats.totalVideos %></div>
+            <div class="stat-label">Videos Recorded</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">💌</div>
+          <div>
+            <div class="stat-value"><%= stats.totalMessages %></div>
+            <div class="stat-label">Guest Wishes</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">💾</div>
+          <div>
+            <div class="stat-value"><%= stats.totalMB %> MB</div>
+            <div class="stat-label">Local Storage Used</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Events Section -->
+      <div style="margin-bottom: 3.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <h2>Your Wedding Events</h2>
+          <a href="/admin/events/create" class="btn btn-secondary btn-sm">+ New Event</a>
+        </div>
+
+        <% if (events && events.length > 0) { %>
+          <div class="events-grid">
+            <% events.forEach(event => { %>
+              <div class="event-card">
+                <div class="event-card-header" style="border-top: 4px solid <%= event.theme_color || '#C5A880' %>;">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                      <h3 style="font-size: 1.3rem;"><%= event.name %></h3>
+                      <div style="font-size: 0.85rem; color: var(--color-muted); margin-top: 0.2rem;">
+                        <%= event.couple_names || 'Wedding Celebration' %>
+                      </div>
+                    </div>
+                    <span style="font-size: 0.75rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 99px; background: <%= event.is_uploads_enabled ? 'var(--color-success-bg)' : 'var(--color-danger-bg)' %>; color: <%= event.is_uploads_enabled ? 'var(--color-success)' : 'var(--color-danger)' %>;">
+                      <%= event.is_uploads_enabled ? 'Uploads Active' : 'Uploads Paused' %>
+                    </span>
+                  </div>
+                </div>
+
+                <div class="event-card-body">
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem; font-size: 0.9rem;">
+                    <span style="color: var(--color-muted);">Event Date:</span>
+                    <strong><%= event.event_date ? new Date(event.event_date).toLocaleDateString() : 'Not Set' %></strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem; font-size: 0.9rem;">
+                    <span style="color: var(--color-muted);">Total Media:</span>
+                    <strong><%= event.media_count || 0 %> items</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                    <span style="color: var(--color-muted);">Guest Wishes:</span>
+                    <strong><%= event.messages_count || 0 %> wishes</strong>
+                  </div>
+                </div>
+
+                <div class="event-card-footer">
+                  <a href="/admin/events/<%= event.public_id %>/qr" class="btn btn-secondary btn-sm" title="Print QR Table Sign">
+                    🖨️ Table QR
+                  </a>
+                  <a href="/admin/events/<%= event.public_id %>/manage" class="btn btn-secondary btn-sm" title="Moderate Media & Download ZIP">
+                    📂 Manage Media
+                  </a>
+                  <a href="/admin/events/<%= event.public_id %>/edit" class="btn btn-secondary btn-sm" title="Event Settings">
+                    ⚙️ Settings
+                  </a>
+                  <a href="/e/<%= event.public_id %>" target="_blank" class="btn btn-primary btn-sm" style="margin-left: auto;" title="Open Guest View">
+                    Guest Hub ↗
+                  </a>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="card text-center" style="padding: 3rem 1.5rem; text-align: center;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">📷</div>
+            <h3 style="margin-bottom: 0.5rem;">No wedding events yet</h3>
+            <p style="color: var(--color-muted); margin-bottom: 1.5rem;">Create your first wedding event to generate table QR codes and start collecting memories.</p>
+            <a href="/admin/events/create" class="btn btn-primary btn-lg">Create Wedding Event 💍</a>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Recent Uploads Stream -->
+      <% if (recentUploads && recentUploads.length > 0) { %>
+        <div>
+          <h2 style="margin-bottom: 1.25rem;">Recent Guest Moments</h2>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem;">
+            <% recentUploads.forEach(item => { %>
+              <div style="position: relative; border-radius: var(--radius-md); overflow: hidden; background: #EAE6DF; aspect-ratio: 1 / 1; box-shadow: var(--shadow-sm);">
+                <% if (item.media_type === 'photo') { %>
+                  <img src="<%= item.thumbnailUrl || item.url %>" alt="Wedding moment" style="width: 100%; height: 100%; object-fit: cover;">
+                <% } else { %>
+                  <video src="<%= item.url %>" style="width: 100%; height: 100%; object-fit: cover;" muted></video>
+                  <div style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.7rem;">🎥</div>
+                <% } %>
+                <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.8)); color: white; padding: 0.4rem 0.6rem; font-size: 0.75rem;">
+                  <div style="font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><%= item.uploader_name %></div>
+                  <div style="opacity: 0.8; font-size: 0.65rem;"><%= item.event_name %></div>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      <% } %>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+  <script src="/js/admin.js"></script>
+</body>
+</html>

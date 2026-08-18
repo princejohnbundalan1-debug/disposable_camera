@@ -1,0 +1,280 @@
+/* ==========================================================================
+   Digital Disposable Camera UI & HUD Viewfinder Styles
+   ========================================================================== */
+
+/* Camera Modal Fullscreen Overlay */
+.camera-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #0A0D0B;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: env(safe-area-inset-top, 16px) 16px env(safe-area-inset-bottom, 24px) 16px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.camera-modal.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Camera Top HUD Controls */
+.camera-hud-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  z-index: 10;
+}
+
+.hud-btn {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #FFFFFF;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.hud-btn:active {
+  transform: scale(0.92);
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.hud-btn.active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #1A1A1A;
+}
+
+/* LCD Roll Counter */
+.lcd-counter {
+  background: #111813;
+  border: 1.5px solid #2B3D2F;
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.lcd-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #7A9A80;
+  font-weight: 700;
+}
+
+.lcd-digits {
+  font-family: var(--font-mono);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #4EFA87;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 8px rgba(78, 250, 135, 0.6);
+}
+
+/* Viewfinder Frame */
+.viewfinder-container {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0.75rem 0;
+  border-radius: 24px;
+  overflow: hidden;
+  background: #000000;
+  box-shadow: 0 0 0 2px rgba(197, 168, 128, 0.35), 0 20px 40px rgba(0, 0, 0, 0.8);
+}
+
+.camera-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Viewfinder Reticle Overlay */
+.viewfinder-reticle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 140px;
+  height: 140px;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  border-radius: 12px;
+  pointer-events: none;
+}
+
+.viewfinder-reticle::before, .viewfinder-reticle::after {
+  content: '';
+  position: absolute;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.viewfinder-reticle::before {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 14px;
+  height: 1.5px;
+}
+
+.viewfinder-reticle::after {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 1.5px;
+  height: 14px;
+}
+
+/* Viewfinder Corner Guides */
+.corner-guide {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-color: rgba(197, 168, 128, 0.8);
+  border-style: solid;
+  pointer-events: none;
+}
+
+.corner-tl { top: 16px; left: 16px; border-width: 2px 0 0 2px; }
+.corner-tr { top: 16px; right: 16px; border-width: 2px 2px 0 0; }
+.corner-bl { bottom: 16px; left: 16px; border-width: 0 0 2px 2px; }
+.corner-br { bottom: 16px; right: 16px; border-width: 0 2px 2px 0; }
+
+/* Camera Bottom Bar & Shutter Button */
+.camera-hud-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 1rem 0;
+  z-index: 10;
+}
+
+.shutter-btn-outer {
+  width: 82px;
+  height: 82px;
+  border-radius: 50%;
+  border: 3.5px solid var(--color-primary);
+  background: transparent;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.shutter-btn-outer:active {
+  transform: scale(0.92);
+}
+
+.shutter-btn-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--color-white);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transition: background 0.15s ease;
+}
+
+.shutter-btn-outer.video-mode {
+  border-color: #E53935;
+}
+
+.shutter-btn-outer.video-mode .shutter-btn-inner {
+  background: #E53935;
+}
+
+.shutter-btn-outer.recording .shutter-btn-inner {
+  border-radius: 8px;
+  transform: scale(0.65);
+  background: #E53935;
+}
+
+/* Strobe Flash Animation */
+.flash-strobe-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #FFFFFF;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 50;
+}
+
+.flash-strobe-overlay.flash-active {
+  animation: cameraFlash 0.35s ease-out;
+}
+
+@keyframes cameraFlash {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Preview Modal After Capture */
+.capture-preview-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.95);
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.5rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.capture-preview-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.preview-media-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 18px;
+}
+
+.preview-media-container img, .preview-media-container video {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 12px;
+}
+
+.preview-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22><text y=%2226%22 font-size=%2224%22>💍</text></svg>">
+</head>
+<body>
+  <%- include('../../partials/header') %>
+  <%- include('../../partials/flash') %>
+
+  <main style="flex: 1; padding: 2.5rem 0;">
+    <div class="container">
+      <!-- Top Action Bar -->
+      <div class="dashboard-header">
+        <div>
+          <a href="/admin/dashboard" style="font-size: 0.9rem; font-weight: 600;">← Back to Dashboard</a>
+          <h1 style="margin-top: 0.25rem;">Media Moderation & Download</h1>
+          <p style="color: var(--color-muted);"><%= event.name %> • <%= mediaList.length %> media items • <%= messages.length %> guest wishes</p>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+          <a href="/admin/events/<%= event.public_id %>/download-all" class="btn btn-primary">
+            📦 Download All as ZIP (<%= mediaList.length %> files)
+          </a>
+          <a href="/e/<%= event.public_id %>/album" target="_blank" class="btn btn-secondary">
+            View Live Album ↗
+          </a>
+        </div>
+      </div>
+
+      <!-- Media Management Grid -->
+      <div style="margin-bottom: 3.5rem;">
+        <h2 style="margin-bottom: 1.25rem;">Uploaded Photos & Videos</h2>
+
+        <% if (mediaList && mediaList.length > 0) { %>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.25rem;">
+            <% mediaList.forEach(item => { %>
+              <div class="card" style="padding: 0.75rem; border-radius: var(--radius-md); overflow: hidden; display: flex; flex-direction: column;">
+                <div style="position: relative; aspect-ratio: 1 / 1; background: #EAE6DF; border-radius: var(--radius-sm); overflow: hidden; margin-bottom: 0.75rem;">
+                  <% if (item.media_type === 'photo') { %>
+                    <img src="<%= item.thumbnailUrl || item.url %>" alt="Wedding moment" style="width: 100%; height: 100%; object-fit: cover;">
+                  <% } else { %>
+                    <video src="<%= item.url %>" controls style="width: 100%; height: 100%; object-fit: cover;"></video>
+                  <% } %>
+                  <div style="position: absolute; top: 6px; left: 6px; background: rgba(0,0,0,0.65); color: white; padding: 2px 8px; border-radius: 99px; font-size: 0.7rem; font-weight: 600;">
+                    <%= item.media_type.toUpperCase() %>
+                  </div>
+                </div>
+
+                <div style="flex: 1; margin-bottom: 0.75rem;">
+                  <div style="font-size: 0.85rem; font-weight: 700;"><%= item.uploader_name %></div>
+                  <% if (item.caption) { %>
+                    <div style="font-size: 0.8rem; color: var(--color-muted); font-style: italic;">"<%= item.caption %>"</div>
+                  <% } %>
+                  <div style="font-size: 0.75rem; color: #999; margin-top: 0.25rem;">
+                    <%= new Date(item.uploaded_at).toLocaleString() %> • <%= (item.file_size / (1024 * 1024)).toFixed(2) %> MB
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: 0.5rem; border-top: 1px solid var(--color-border); padding-top: 0.5rem;">
+                  <a href="/e/download/<%= item.id %>" class="btn btn-secondary btn-sm" style="flex: 1; padding: 0.35rem 0.6rem; font-size: 0.75rem;" download>
+                    ⬇ Download
+                  </a>
+                  <form action="/admin/media/<%= item.id %>/delete" method="POST" onsubmit="return confirm('Delete this media item permanently?');" style="margin: 0;">
+                    <button type="submit" class="btn btn-danger btn-sm" style="padding: 0.35rem 0.6rem; font-size: 0.75rem;" title="Delete">
+                      🗑️
+                    </button>
+                  </form>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="card text-center" style="padding: 3rem 1.5rem; text-align: center;">
+            <p style="color: var(--color-muted);">No photos or videos have been uploaded to this event yet.</p>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Guestbook Messages Moderation -->
+      <div>
+        <h2 style="margin-bottom: 1.25rem;">Guest Wishes & Messages</h2>
+
+        <% if (messages && messages.length > 0) { %>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem;">
+            <% messages.forEach(msg => { %>
+              <div class="card" style="padding: 1.25rem;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                  <strong style="color: var(--color-primary); font-size: 0.95rem;">💌 <%= msg.guest_name %></strong>
+                  <form action="/admin/messages/<%= msg.id %>/delete" method="POST" onsubmit="return confirm('Delete this message?');">
+                    <button type="submit" style="background: none; border: none; color: var(--color-danger); cursor: pointer; font-size: 0.85rem;" title="Delete Message">✕</button>
+                  </form>
+                </div>
+                <p style="font-size: 0.9rem; font-style: italic; margin-bottom: 0.75rem;">"<%= msg.message %>"</p>
+                <div style="font-size: 0.75rem; color: var(--color-muted);"><%= new Date(msg.created_at).toLocaleString() %></div>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="card text-center" style="padding: 2.5rem 1.5rem; text-align: center;">
+            <p style="color: var(--color-muted);">No guest messages posted yet.</p>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../../partials/footer') %>
+</body>
+</html>

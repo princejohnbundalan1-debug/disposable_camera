@@ -1,0 +1,19 @@
+<div class="flash-container container">
+  <% if (flashSuccess && flashSuccess.length > 0) { %>
+    <% flashSuccess.forEach(msg => { %>
+      <div class="alert alert-success">
+        <span>✨</span>
+        <div><%= msg %></div>
+      </div>
+    <% }) %>
+  <% } %>
+
+  <% if (flashError && flashError.length > 0) { %>
+    <% flashError.forEach(msg => { %>
+      <div class="alert alert-error">
+        <span>⚠️</span>
+        <div><%= msg %></div>
+      </div>
+    <% }) %>
+  <% } %>
+</div>

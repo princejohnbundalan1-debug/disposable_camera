@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/camera.css">
+  <link rel="stylesheet" href="/css/gallery.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22><text y=%2226%22 font-size=%2224%22>💍</text></svg>">
+  
+  <style>
+    :root {
+      --color-primary: <%= event.theme_color || '#C5A880' %>;
+    }
+  </style>
+</head>
+<body style="background: #121614; color: #FFFFFF; min-height: 100vh; display: flex; flex-direction: column;">
+
+  <!-- Guest Mobile Viewport Wrapper -->
+  <main style="flex: 1; max-width: 480px; width: 100%; margin: 0 auto; padding: 1.5rem 1.25rem; display: flex; flex-direction: column; justify-content: space-between;">
+    
+    <!-- Top Wedding Couple Branding -->
+    <div style="text-align: center; margin-top: 1rem; margin-bottom: 2rem;">
+      <div style="font-size: 2.4rem; margin-bottom: 0.5rem;">💍</div>
+      
+      <h1 style="font-family: var(--font-serif); font-size: 1.95rem; font-weight: 700; color: #F5EFE6; margin-bottom: 0.25rem;">
+        <%= event.couple_names || event.name %>
+      </h1>
+
+      <div style="font-size: 0.85rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--color-primary); font-weight: 600;">
+        <%= event.event_date ? new Date(event.event_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'OUR WEDDING CELEBRATION' %>
+      </div>
+
+      <% if (event.description) { %>
+        <p style="color: #A0A5A2; font-size: 0.85rem; margin-top: 0.75rem; line-height: 1.4; padding: 0 0.5rem;">
+          <%= event.description %>
+        </p>
+      <% } %>
+    </div>
+
+    <!-- Main Disposable Camera Action Buttons -->
+    <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2.5rem;">
+      <% if (event.is_uploads_enabled) { %>
+        <!-- Primary Action: Open Camera Viewfinder -->
+        <button type="button" class="btn btn-primary btn-lg" data-open-camera="photo" style="padding: 1.2rem; font-size: 1.15rem; font-weight: 700; border-radius: 99px; display: flex; align-items: center; justify-content: center; gap: 0.75rem; box-shadow: 0 8px 30px rgba(197, 168, 128, 0.4);">
+          <span style="font-size: 1.4rem;">📷</span>
+          <span>Take Photo / Video</span>
+        </button>
+
+        <!-- Secondary Action: Upload from Phone Gallery -->
+        <button type="button" class="btn btn-secondary btn-lg" data-open-uploader style="background: rgba(255,255,255,0.1); color: #FFFFFF; border-color: rgba(255,255,255,0.25); backdrop-filter: blur(10px); padding: 1.05rem; font-size: 1.05rem; font-weight: 600; border-radius: 99px;">
+          <span style="font-size: 1.2rem;">⬆</span>
+          <span>Upload Media</span>
+        </button>
+      <% } else { %>
+        <div style="background: rgba(255,255,255,0.08); border: 1px dashed rgba(255,255,255,0.2); padding: 1.25rem; border-radius: 18px; text-align: center;">
+          <span style="font-size: 1.5rem;">⏳</span>
+          <div style="font-weight: 600; margin-top: 0.35rem;">Uploads are currently closed</div>
+          <div style="font-size: 0.8rem; color: #888;">The hosts have temporarily paused new photo submissions.</div>
+        </div>
+      <% } %>
+
+      <!-- View Shared Album -->
+      <a href="/e/<%= event.public_id %>/album" class="btn btn-secondary btn-lg" style="background: rgba(255,255,255,0.1); color: #FFFFFF; border-color: rgba(255,255,255,0.25); backdrop-filter: blur(10px); padding: 1.05rem; font-size: 1.05rem; font-weight: 600; border-radius: 99px; text-align: center;">
+        <span style="font-size: 1.2rem;">🖼</span>
+        <span>View Album (<%= stats.totalMedia %>)</span>
+      </a>
+
+      <!-- Leave a Message -->
+      <a href="/e/<%= event.public_id %>/guestbook" class="btn btn-secondary btn-lg" style="background: rgba(255,255,255,0.1); color: #FFFFFF; border-color: rgba(255,255,255,0.25); backdrop-filter: blur(10px); padding: 1.05rem; font-size: 1.05rem; font-weight: 600; border-radius: 99px; text-align: center;">
+        <span style="font-size: 1.2rem;">💌</span>
+        <span>Leave a Message (<%= stats.totalMessages %>)</span>
+      </a>
+    </div>
+
+    <!-- Recent Filmstrip Moments Preview -->
+    <% if (recentMedia && recentMedia.length > 0) { %>
+      <div style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+          <span style="font-size: 0.85rem; color: #A0A5A2; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Recent Captures</span>
+          <a href="/e/<%= event.public_id %>/album" style="font-size: 0.8rem; color: var(--color-primary);">See All →</a>
+        </div>
+
+        <div style="display: flex; gap: 0.65rem; overflow-x: auto; padding-bottom: 0.5rem; scrollbar-width: none;">
+          <% recentMedia.forEach(item => { %>
+            <div style="flex-shrink: 0; width: 78px; height: 78px; border-radius: 12px; overflow: hidden; background: #222; position: relative;">
+              <% if (item.media_type === 'photo') { %>
+                <img src="/storage-files/<%= item.thumbnail_path || item.storage_path %>" alt="Wedding roll" style="width: 100%; height: 100%; object-fit: cover;">
+              <% } else { %>
+                <video src="/storage-files/<%= item.storage_path %>" style="width: 100%; height: 100%; object-fit: cover;" muted></video>
+                <div style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.6); font-size: 0.6rem; padding: 1px 4px; border-radius: 4px;">🎥</div>
+              <% } %>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+    <% } %>
+  </main>
+
+  <!-- Hidden Direct File Selector -->
+  <input type="file" id="galleryFileInput" accept="image/*,video/*" multiple style="display: none;">
+
+  <!-- Upload Details Modal for Gallery Batch Submissions -->
+  <div id="uploadModal" class="camera-modal" style="background: rgba(10,13,11,0.96); justify-content: center; align-items: center; padding: 2rem 1.5rem;">
+    <div style="background: #1E2421; border: 1px solid rgba(255,255,255,0.15); border-radius: 24px; padding: 2rem 1.5rem; max-width: 420px; width: 100%;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <h3 style="color: white; font-size: 1.25rem;">Upload to Wedding Roll 💍</h3>
+        <button type="button" onclick="document.getElementById('uploadModal').classList.remove('active')" style="background: none; border: none; color: #888; font-size: 1.4rem; cursor: pointer;">✕</button>
+      </div>
+
+      <div id="uploadPreviewList" style="max-height: 140px; overflow-y: auto; margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem;"></div>
+
+      <form id="directUploadForm">
+        <div class="form-group" style="margin-bottom: 0.75rem;">
+          <input type="text" id="uploaderGuestName" class="form-control" placeholder="Your Name (e.g. Grandma Rose)" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+        </div>
+        <div class="form-group" style="margin-bottom: 1.25rem;">
+          <input type="text" id="uploaderCaption" class="form-control" placeholder="Add a memory caption (optional)..." style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg">
+          Submit Moments 💍
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Progress Bar Overlay Modal -->
+  <div id="uploadProgressModal" class="camera-modal" style="background: rgba(10,13,11,0.92); justify-content: center; align-items: center; padding: 2rem 1.5rem;">
+    <div style="background: #1E2421; border: 1px solid var(--color-primary); border-radius: 24px; padding: 2.5rem 1.5rem; max-width: 380px; width: 100%; text-align: center;">
+      <div style="font-size: 2.5rem; margin-bottom: 1rem;">📷</div>
+      <div id="uploadProgressText" style="font-weight: 600; font-size: 1.1rem; color: white; margin-bottom: 1.25rem;">Uploading moments...</div>
+      
+      <div style="width: 100%; height: 12px; background: rgba(255,255,255,0.15); border-radius: 99px; overflow: hidden; margin-bottom: 0.5rem;">
+        <div id="uploadProgressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--color-primary), #E6D7C3); border-radius: 99px; transition: width 0.2s ease;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Include Disposable Camera Viewfinder -->
+  <%- include('../partials/cameraModal') %>
+
+  <!-- Client-side Scripts -->
+  <script>
+    window.EVENT_PUBLIC_ID = "<%= event.public_id %>";
+  </script>
+  <script src="/js/camera.js"></script>
+  <script src="/js/uploader.js"></script>
+</body>
+</html>

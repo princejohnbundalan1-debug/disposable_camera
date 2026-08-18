@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22><text y=%2226%22 font-size=%2224%22>💍</text></svg>">
+</head>
+<body>
+  <%- include('../../partials/header') %>
+  <%- include('../../partials/flash') %>
+
+  <main style="flex: 1; padding: 2.5rem 0;">
+    <div class="container">
+      <div class="dashboard-header">
+        <div>
+          <h1>My Wedding Events</h1>
+          <p style="color: var(--color-muted);">Select an event to view media, generate table signs, or adjust settings.</p>
+        </div>
+        <a href="/admin/events/create" class="btn btn-primary">+ Create New Wedding</a>
+      </div>
+
+      <% if (events && events.length > 0) { %>
+        <div class="events-grid">
+          <% events.forEach(event => { %>
+            <div class="event-card">
+              <div class="event-card-header" style="border-top: 4px solid <%= event.theme_color || '#C5A880' %>;">
+                <h3 style="font-size: 1.3rem;"><%= event.name %></h3>
+                <div style="font-size: 0.85rem; color: var(--color-muted); margin-top: 0.2rem;">
+                  <%= event.couple_names || 'Wedding Celebration' %>
+                </div>
+              </div>
+
+              <div class="event-card-body">
+                <div style="font-size: 0.85rem; background: var(--color-light); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); margin-bottom: 1rem; word-break: break-all;">
+                  <strong>Event Link:</strong> /e/<%= event.public_id %>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 0.5rem;">
+                  <span style="color: var(--color-muted);">Status:</span>
+                  <span style="color: <%= event.is_uploads_enabled ? 'var(--color-success)' : 'var(--color-danger)' %>; font-weight: 600;">
+                    <%= event.is_uploads_enabled ? '● Uploads Open' : '● Uploads Closed' %>
+                  </span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                  <span style="color: var(--color-muted);">Captured Media:</span>
+                  <strong><%= event.media_count || 0 %> items</strong>
+                </div>
+              </div>
+
+              <div class="event-card-footer">
+                <a href="/admin/events/<%= event.public_id %>/qr" class="btn btn-secondary btn-sm">🖨️ Table QR</a>
+                <a href="/admin/events/<%= event.public_id %>/manage" class="btn btn-secondary btn-sm">📂 Media</a>
+                <a href="/admin/events/<%= event.public_id %>/edit" class="btn btn-secondary btn-sm">⚙️ Settings</a>
+                <a href="/e/<%= event.public_id %>" target="_blank" class="btn btn-primary btn-sm" style="margin-left: auto;">View ↗</a>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <div class="card text-center" style="padding: 3rem 1.5rem; text-align: center;">
+          <p>No wedding events found.</p>
+          <a href="/admin/events/create" class="btn btn-primary" style="margin-top: 1rem;">Create One Now</a>
+        </div>
+      <% } %>
+    </div>
+  </main>
+
+  <%- include('../../partials/footer') %>
+</body>
+</html>

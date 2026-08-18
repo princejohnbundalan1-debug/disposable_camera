@@ -1,0 +1,54 @@
+/* ==========================================================================
+   Luxury Wedding Moments - Design System Tokens & Color Variables
+   ========================================================================== */
+
+:root {
+  /* Color Palette - Luxury Wedding Aesthetics */
+  --color-primary: #C5A880;          /* Champagne Gold */
+  --color-primary-hover: #b09166;
+  --color-primary-light: #F4EDE2;
+  --color-secondary: #B76E79;        /* Rose Gold */
+  --color-secondary-light: #FAEFF1;
+  --color-dark: #1F2421;             /* Deep Onyx / Charcoal */
+  --color-dark-soft: #2E3430;
+  --color-light: #FAF8F5;            /* Warm Ivory Pearl */
+  --color-white: #FFFFFF;
+  --color-muted: #8E8D8A;
+  --color-border: #E8E2D9;
+  --color-border-hover: #D4C9BC;
+  
+  /* Status Colors */
+  --color-success: #2E7D32;
+  --color-success-bg: #E8F5E9;
+  --color-danger: #C62828;
+  --color-danger-bg: #FFEBEE;
+  --color-warning: #EF6C00;
+  --color-warning-bg: #FFF3E0;
+
+  /* Typography */
+  --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Space Mono', monospace;
+
+  /* Glassmorphism & Elevation */
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-bg-dark: rgba(31, 36, 33, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.4);
+  --glass-blur: blur(14px);
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 8px 24px rgba(31, 36, 33, 0.08);
+  --shadow-lg: 0 16px 40px rgba(31, 36, 33, 0.12);
+  --shadow-gold: 0 8px 24px rgba(197, 168, 128, 0.3);
+
+  /* Radii */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}

@@ -1,0 +1,66 @@
+<!-- Digital Disposable Camera HUD Modal -->
+<div id="cameraModal" class="camera-modal">
+  <!-- Top HUD Bar -->
+  <div class="camera-hud-top">
+    <button type="button" id="closeCameraBtn" class="hud-btn" title="Close Camera">✕</button>
+    
+    <div class="lcd-counter">
+      <span class="lcd-label">ROLL</span>
+      <span id="lcdCounterDigits" class="lcd-digits">READY</span>
+    </div>
+
+    <button type="button" id="flashBtn" class="hud-btn" title="Toggle Flash">⚡</button>
+  </div>
+
+  <!-- Viewfinder Frame -->
+  <div class="viewfinder-container">
+    <video id="cameraVideo" class="camera-video" playsinline muted></video>
+    
+    <!-- Reticle & Corner Guides -->
+    <div class="viewfinder-reticle"></div>
+    <div class="corner-guide corner-tl"></div>
+    <div class="corner-guide corner-tr"></div>
+    <div class="corner-guide corner-bl"></div>
+    <div class="corner-guide corner-br"></div>
+
+    <!-- Flash Strobe Overlay -->
+    <div id="flashOverlay" class="flash-strobe-overlay"></div>
+  </div>
+
+  <!-- Bottom HUD Bar & Shutter -->
+  <div class="camera-hud-bottom">
+    <button type="button" id="modeToggleBtn" class="hud-btn" title="Toggle Video/Photo">🎥</button>
+
+    <button type="button" id="shutterBtn" class="shutter-btn-outer" title="Capture Moment">
+      <div class="shutter-btn-inner"></div>
+    </button>
+
+    <button type="button" id="switchCamBtn" class="hud-btn" title="Switch Camera">🔄</button>
+  </div>
+
+  <!-- Capture Preview & Confirmation Overlay -->
+  <div id="capturePreviewOverlay" class="capture-preview-overlay">
+    <div style="display: flex; justify-content: space-between; align-items: center; color: white;">
+      <h3 style="color: white; font-size: 1.2rem;">Ready to Share? 💍</h3>
+      <button type="button" id="retakeBtn" class="btn btn-secondary btn-sm">Retake ↺</button>
+    </div>
+
+    <div id="previewMediaContainer" class="preview-media-container"></div>
+
+    <div>
+      <div class="form-group" style="margin-bottom: 0.75rem;">
+        <input type="text" id="previewGuestName" class="form-control" placeholder="Your Name (e.g. Aunt Sarah)" style="background: rgba(255,255,255,0.9); border: none;">
+      </div>
+      <div class="form-group" style="margin-bottom: 1rem;">
+        <input type="text" id="previewCaption" class="form-control" placeholder="Add a sweet caption (optional)..." style="background: rgba(255,255,255,0.9); border: none;">
+      </div>
+
+      <button type="button" id="confirmUploadBtn" class="btn btn-primary btn-block btn-lg">
+        Add to Album 💍
+      </button>
+    </div>
+  </div>
+
+  <!-- Fallback Native File Input for Browsers without getUserMedia permissions -->
+  <input type="file" id="fallbackCameraInput" accept="image/*,video/*" capture="environment" style="display: none;">
+</div>

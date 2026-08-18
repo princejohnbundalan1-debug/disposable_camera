@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/camera.css">
+  <link rel="stylesheet" href="/css/gallery.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22><text y=%2226%22 font-size=%2224%22>🖼</text></svg>">
+  
+  <style>
+    :root {
+      --color-primary: <%= event.theme_color || '#C5A880' %>;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header Bar -->
+  <header class="site-header">
+    <div class="container nav-wrapper">
+      <a href="/e/<%= event.public_id %>" class="logo-brand">
+        <span>←</span>
+        <span><%= event.couple_names || event.name %></span>
+      </a>
+
+      <div style="display: flex; gap: 0.5rem;">
+        <button type="button" data-open-camera="photo" class="btn btn-primary btn-sm">
+          📷 Snap Photo
+        </button>
+        <a href="/e/<%= event.public_id %>/guestbook" class="btn btn-secondary btn-sm">
+          💌 Wishes
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <%- include('../partials/flash') %>
+
+  <!-- Album Gallery Section -->
+  <main class="container gallery-section">
+    <div style="text-align: center; margin-bottom: 2rem;">
+      <h1 style="font-size: 2.2rem; margin-bottom: 0.25rem;"><%= event.couple_names || event.name %></h1>
+      <p style="color: var(--color-muted);">Shared Wedding Album • <%= mediaList.length %> Moments Captured</p>
+    </div>
+
+    <!-- Filter Pills -->
+    <div class="gallery-filters">
+      <button type="button" class="filter-btn active" data-filter="all">All Moments (<%= mediaList.length %>)</button>
+      <button type="button" class="filter-btn" data-filter="photo">Photos (<%= mediaList.filter(m => m.media_type === 'photo').length %>)</button>
+      <button type="button" class="filter-btn" data-filter="video">Videos (<%= mediaList.filter(m => m.media_type === 'video').length %>)</button>
+    </div>
+
+    <!-- Masonry Photo Grid -->
+    <% if (mediaList && mediaList.length > 0) { %>
+      <div id="masonryGallery" class="masonry-grid">
+        <% mediaList.forEach(item => { %>
+          <div class="gallery-item" 
+               data-id="<%= item.id %>" 
+               data-type="<%= item.media_type %>" 
+               data-url="<%= item.url %>"
+               data-uploader="<%= item.uploader_name %>"
+               data-caption="<%= item.caption || '' %>">
+            
+            <div class="gallery-thumb-wrapper">
+              <% if (item.media_type === 'photo') { %>
+                <img src="<%= item.thumbnailUrl || item.url %>" alt="Wedding Moment" class="gallery-thumb" loading="lazy">
+              <% } else { %>
+                <video src="<%= item.url %>" class="gallery-thumb" muted preload="metadata"></video>
+                <div class="media-badge">🎥 VIDEO</div>
+              <% } %>
+            </div>
+
+            <div class="gallery-item-meta">
+              <div class="guest-author">📷 <%= item.uploader_name %></div>
+              <% if (item.caption) { %>
+                <div class="guest-caption">"<%= item.caption %>"</div>
+              <% } %>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="card text-center" style="padding: 4rem 1.5rem; text-align: center; max-width: 500px; margin: 0 auto;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">📸</div>
+        <h3 style="margin-bottom: 0.5rem;">Be the first to capture a moment!</h3>
+        <p style="color: var(--color-muted); margin-bottom: 1.5rem;">The wedding roll is waiting for its very first snapshot.</p>
+        <button type="button" data-open-camera="photo" class="btn btn-primary btn-lg">
+          Take First Photo 📷
+        </button>
+      </div>
+    <% } %>
+  </main>
+
+  <!-- Fullscreen Lightbox Modal -->
+  <div id="lightboxModal" class="lightbox-modal">
+    <div class="lightbox-header">
+      <div id="lightboxAuthor" style="font-weight: 600;">Captured by Guest</div>
+      <button type="button" id="closeLightboxBtn" style="background: none; border: none; color: white; font-size: 1.8rem; cursor: pointer;">✕</button>
+    </div>
+
+    <div class="lightbox-content">
+      <button type="button" id="prevLightboxBtn" class="lightbox-nav-btn lightbox-prev">‹</button>
+      <div id="lightboxMediaContainer"></div>
+      <button type="button" id="nextLightboxBtn" class="lightbox-nav-btn lightbox-next">›</button>
+    </div>
+
+    <div class="lightbox-footer">
+      <div id="lightboxCaption" style="font-style: italic; max-width: 70%;"></div>
+      <a id="lightboxDownloadBtn" href="#" download class="btn btn-secondary btn-sm" style="margin-left: auto;">
+        ⬇ Save High-Res
+      </a>
+    </div>
+  </div>
+
+  <!-- Camera HUD Viewfinder Modal -->
+  <%- include('../partials/cameraModal') %>
+
+  <!-- Scripts -->
+  <script>
+    window.EVENT_PUBLIC_ID = "<%= event.public_id %>";
+  </script>
+  <script src="/js/camera.js"></script>
+  <script src="/js/uploader.js"></script>
+  <script src="/js/gallery.js"></script>
+</body>
+</html>

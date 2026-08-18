@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title><%= typeof title !== 'undefined' ? title : 'Wedding Moments' %></title>
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/camera.css">
+  <link rel="stylesheet" href="/css/gallery.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22><text y=%2226%22 font-size=%2224%22>📸</text></svg>">
+  
+  <% if (typeof event !== 'undefined' && event && event.theme_color) { %>
+    <style>
+      :root {
+        --color-primary: <%= event.theme_color %>;
+      }
+    </style>
+  <% } %>
+</head>
+<body style="background-color: var(--color-light);">
+  
+  <!-- Guest Minimal Header -->
+  <header style="background: var(--glass-bg); backdrop-filter: var(--glass-blur); border-bottom: 1px solid var(--color-border); padding: 0.75rem 1rem; position: sticky; top: 0; z-index: 90;">
+    <div style="display: flex; align-items: center; justify-content: space-between; max-width: 600px; margin: 0 auto;">
+      <a href="/e/<%= typeof event !== 'undefined' && event ? event.public_id : '' %>" style="display: flex; align-items: center; gap: 0.5rem; color: var(--color-dark); font-family: var(--font-serif); font-weight: 700; text-decoration: none;">
+        <span style="font-size: 1.3rem;">💍</span>
+        <span style="font-size: 1.05rem;"><%= typeof event !== 'undefined' && event ? (event.couple_names || event.name) : 'Our Wedding' %></span>
+      </a>
+
+      <div style="display: flex; gap: 0.5rem;">
+        <% if (typeof event !== 'undefined' && event) { %>
+          <a href="/e/<%= event.public_id %>/album" class="btn btn-secondary btn-sm" title="View Shared Album">🖼 Album</a>
+          <a href="/e/<%= event.public_id %>/guestbook" class="btn btn-secondary btn-sm" title="Leave a Wish">💌 Wishes</a>
+        <% } %>
+      </div>
+    </div>
+  </header>
+
+  <%- include('../partials/flash') %>
+
+  <!-- Guest Content -->
+  <main style="flex: 1; padding: 1.25rem 1rem;">
+    <div style="max-width: 600px; margin: 0 auto;">
+      <%- body %>
+    </div>
+  </main>
+
+  <!-- Global Camera Overlay Modal -->
+  <%- include('../partials/cameraModal') %>
+
+  <!-- Client-side Scripts -->
+  <script>
+    window.EVENT_PUBLIC_ID = "<%= typeof event !== 'undefined' && event ? event.public_id : '' %>";
+    
+    // Simple toast helper
+    window.showToast = function(msg) {
+      const toast = document.createElement('div');
+      toast.className = 'alert alert-success';
+      toast.style.position = 'fixed';
+      toast.style.bottom = '20px';
+      toast.style.left = '50%';
+      toast.style.transform = 'translateX(-50%)';
+      toast.style.zIndex = '9999';
+      toast.style.boxShadow = '0 10px 30px rgba(0,0,0,0.2)';
+      toast.innerHTML = `<span>✨</span> <div>${msg}</div>`;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3500);
+    };
+  </script>
+  <script src="/js/camera.js"></script>
+  <script src="/js/uploader.js"></script>
+  <script src="/js/gallery.js"></script>
+  <script src="/js/guestbook.js"></script>
+</body>
+</html>

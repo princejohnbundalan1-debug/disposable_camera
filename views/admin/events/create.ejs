@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22><text y=%2226%22 font-size=%2224%22>💍</text></svg>">
+</head>
+<body>
+  <%- include('../../partials/header') %>
+  <%- include('../../partials/flash') %>
+
+  <main style="flex: 1; padding: 2.5rem 0;">
+    <div class="container container-narrow">
+      <div class="card">
+        <div style="margin-bottom: 2rem; border-bottom: 1px solid var(--color-border); padding-bottom: 1.25rem;">
+          <h1 style="font-size: 1.85rem;">Create Your Wedding Event 💍</h1>
+          <p style="color: var(--color-muted);">Set up your digital disposable camera experience for your guests.</p>
+        </div>
+
+        <form action="/admin/events/create" method="POST">
+          <div class="form-group">
+            <label for="name" class="form-label">Event Name *</label>
+            <input type="text" id="name" name="name" class="form-control" placeholder="e.g. John & Maria's Wedding" required autofocus>
+          </div>
+
+          <div class="form-group">
+            <label for="couple_names" class="form-label">Couple Names</label>
+            <input type="text" id="couple_names" name="couple_names" class="form-control" placeholder="e.g. John & Maria">
+          </div>
+
+          <div class="form-group">
+            <label for="event_date" class="form-label">Wedding Date</label>
+            <input type="date" id="event_date" name="event_date" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label for="description" class="form-label">Welcome Message / Instructions for Guests</label>
+            <textarea id="description" name="description" class="form-control" placeholder="Welcome to our wedding! Snap photos throughout the evening to help us capture every special moment from your perspective."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Theme Color Accent</label>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.5rem;">
+              <% Object.values(themes).forEach(theme => { %>
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem 0.9rem; border: 1.5px solid var(--color-border); border-radius: var(--radius-md);">
+                  <input type="radio" name="theme_color" value="<%= theme.primary %>" <%= theme.id === 'champagne' ? 'checked' : '' %>>
+                  <span style="width: 18px; height: 18px; border-radius: 50%; background: <%= theme.primary %>; display: inline-block;"></span>
+                  <span style="font-size: 0.9rem; font-weight: 500;"><%= theme.name %></span>
+                </label>
+              <% }) %>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="privacy_mode" class="form-label">Privacy Mode</label>
+            <select id="privacy_mode" name="privacy_mode" class="form-control">
+              <option value="PUBLIC">Public (Anyone with the QR code or link can participate)</option>
+              <option value="PRIVATE">Private (Only guests with unique event link)</option>
+            </select>
+          </div>
+
+          <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+            <button type="submit" class="btn btn-primary btn-lg" style="flex: 1;">
+              Generate QR Code & Start Event 💍
+            </button>
+            <a href="/admin/dashboard" class="btn btn-secondary btn-lg">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../../partials/footer') %>
+</body>
+</html>

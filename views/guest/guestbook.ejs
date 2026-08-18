@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/camera.css">
+  <link rel="stylesheet" href="/css/gallery.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22><text y=%2226%22 font-size=%2224%22>💌</text></svg>">
+  
+  <style>
+    :root {
+      --color-primary: <%= event.theme_color || '#C5A880' %>;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header Bar -->
+  <header class="site-header">
+    <div class="container nav-wrapper">
+      <a href="/e/<%= event.public_id %>" class="logo-brand">
+        <span>←</span>
+        <span><%= event.couple_names || event.name %></span>
+      </a>
+
+      <div style="display: flex; gap: 0.5rem;">
+        <a href="/e/<%= event.public_id %>/album" class="btn btn-secondary btn-sm">
+          🖼 Album
+        </a>
+        <button type="button" data-open-camera="photo" class="btn btn-primary btn-sm">
+          📷 Snap
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <%- include('../partials/flash') %>
+
+  <main class="container container-narrow" style="padding: 2.5rem 1rem;">
+    <!-- Form Card to Leave a Wish -->
+    <div class="card" style="margin-bottom: 3rem;">
+      <div style="text-align: center; margin-bottom: 1.5rem;">
+        <div style="font-size: 2.5rem; margin-bottom: 0.25rem;">💌</div>
+        <h1 style="font-size: 1.85rem;">Wedding Guestbook & Wishes</h1>
+        <p style="color: var(--color-muted); font-size: 0.95rem;">Send your love, heartfelt memories, and blessings to <%= event.couple_names || 'the happy couple' %>.</p>
+      </div>
+
+      <form id="guestbookForm">
+        <div class="form-group">
+          <label for="guestNameInput" class="form-label">Your Name</label>
+          <input type="text" id="guestNameInput" name="guest_name" class="form-control" placeholder="Uncle Dave & Aunt Jane" required autofocus>
+        </div>
+
+        <div class="form-group">
+          <label for="guestMessageInput" class="form-label">Your Heartfelt Message</label>
+          <textarea id="guestMessageInput" name="message" class="form-control" placeholder="Wishing you a lifetime of laughter, love, and joyful adventures together!" required></textarea>
+        </div>
+
+        <button type="submit" id="submitWishBtn" class="btn btn-primary btn-block btn-lg" style="margin-top: 1rem;">
+          Send Wedding Wish 💍
+        </button>
+      </form>
+    </div>
+
+    <!-- Messages Wall -->
+    <div>
+      <h2 style="font-size: 1.5rem; margin-bottom: 1rem;">Wishes from Family & Friends (<%= messages.length %>)</h2>
+
+      <div id="messagesGrid" class="messages-grid">
+        <% if (messages && messages.length > 0) { %>
+          <% messages.forEach(msg => { %>
+            <div class="message-card">
+              <div class="message-text">"<%= msg.message %>"</div>
+              <div class="message-author">💌 <%= msg.guest_name %></div>
+              <div class="message-date"><%= new Date(msg.created_at).toLocaleDateString() %></div>
+            </div>
+          <% }) %>
+        <% } %>
+      </div>
+    </div>
+  </main>
+
+  <!-- Include Disposable Camera Modal -->
+  <%- include('../partials/cameraModal') %>
+
+  <!-- Scripts -->
+  <script>
+    window.EVENT_PUBLIC_ID = "<%= event.public_id %>";
+  </script>
+  <script src="/js/camera.js"></script>
+  <script src="/js/guestbook.js"></script>
+</body>
+</html>

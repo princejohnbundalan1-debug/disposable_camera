@@ -1,0 +1,21 @@
+<header class="site-header">
+  <div class="container nav-wrapper">
+    <a href="/" class="logo-brand">
+      <span class="logo-icon">💍</span>
+      <span>Wedding Moments</span>
+    </a>
+
+    <nav>
+      <ul class="nav-links">
+        <% if (isAuthenticated) { %>
+          <li><a href="/admin/dashboard" class="nav-link <%= currentPath === '/admin/dashboard' ? 'active' : '' %>">Dashboard</a></li>
+          <li><a href="/admin/events" class="nav-link <%= currentPath.startsWith('/admin/events') ? 'active' : '' %>">My Events</a></li>
+          <li><a href="/auth/logout" class="btn btn-secondary btn-sm">Log Out</a></li>
+        <% } else { %>
+          <li><a href="/auth/login" class="nav-link">Organizer Login</a></li>
+          <li><a href="/auth/register" class="btn btn-primary btn-sm">Host an Event</a></li>
+        <% } %>
+      </ul>
+    </nav>
+  </div>
+</header>

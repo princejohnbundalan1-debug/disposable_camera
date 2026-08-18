@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22><text y=%2226%22 font-size=%2224%22>💍</text></svg>">
+</head>
+<body style="background: #F4F1EA;">
+  <%- include('../../partials/header') %>
+
+  <!-- Controls Bar (Hidden during actual print) -->
+  <div class="no-print" style="background: var(--color-white); border-bottom: 1px solid var(--color-border); padding: 1rem 0;">
+    <div class="container" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: gap; gap: 1rem;">
+      <div>
+        <a href="/admin/dashboard" style="font-size: 0.9rem; font-weight: 600;">← Back to Dashboard</a>
+        <h2 style="font-size: 1.4rem; margin-top: 0.2rem;">Print Table QR Sign</h2>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem;">
+        <button type="button" onclick="window.print()" class="btn btn-primary">
+          🖨️ Print Table Sign
+        </button>
+        <a href="<%= qrDataUrl %>" download="<%= event.name.replace(/[^a-zA-Z0-9]/g, '_') %>_QR.png" class="btn btn-secondary">
+          ⬇ Download QR PNG
+        </a>
+        <button type="button" class="btn btn-secondary" data-copy="<%= eventUrl %>">
+          🔗 Copy Link
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Luxury Wedding Table Sign (Formatted for 4x6" / 5x7" frames) -->
+  <main class="print-card-wrapper">
+    <div class="wedding-table-card" style="border-color: <%= event.theme_color || '#C5A880' %>;">
+      <div class="wedding-card-ornament" style="color: <%= event.theme_color || '#C5A880' %>;">💍</div>
+      
+      <h1 class="wedding-card-couple">
+        <%= event.couple_names || event.name %>
+      </h1>
+
+      <div class="wedding-card-date">
+        <%= event.event_date ? new Date(event.event_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'Our Wedding Day' %>
+      </div>
+
+      <div class="wedding-card-qr-box">
+        <img src="<%= qrDataUrl %>" alt="Wedding QR Code" class="wedding-card-qr-img">
+      </div>
+
+      <div class="wedding-card-instruction">
+        Scan to be our disposable camera! 📷
+      </div>
+
+      <p class="wedding-card-subtext">
+        No app download needed. Snap candid photos, videos, and leave us a lovely message for our shared wedding album.
+      </p>
+
+      <div style="margin-top: 1.5rem; font-size: 0.75rem; color: #999; font-family: var(--font-mono);">
+        <%= eventUrl %>
+      </div>
+    </div>
+  </main>
+
+  <script src="/js/admin.js"></script>
+</body>
+</html>
