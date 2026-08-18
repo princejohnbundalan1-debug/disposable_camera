@@ -6,37 +6,47 @@ require('dotenv').config();
  */
 async function runMigrations() {
   const databaseUrl = process.env.DATABASE_URL;
-  const host = process.env.DB_HOST || 'localhost';
-  const port = parseInt(process.env.DB_PORT, 10) || 3306;
-  const user = process.env.DB_USER || 'root';
-  const password = process.env.DB_PASSWORD || '';
-  const database = process.env.DB_NAME || 'wedding_disposable_camera';
-  const useSsl = process.env.DB_SSL === 'true' || (databaseUrl && databaseUrl.includes('ssl='));
+  let host = process.env.DB_HOST || 'localhost';
+  let port = parseInt(process.env.DB_PORT, 10) || 3306;
+  let user = process.env.DB_USER || 'root';
+  let password = process.env.DB_PASSWORD || '';
+  let database = process.env.DB_NAME || 'wedding_disposable_camera';
 
-  console.log(`[Database Migration] Initializing tables for MySQL database...`);
+  if (databaseUrl && databaseUrl.startsWith('mysql')) {
+    try {
+      const cleanUrl = databaseUrl.split('?')[0];
+      const parsed = new URL(cleanUrl);
+      host = parsed.hostname;
+      port = parseInt(parsed.port, 10) || 4000;
+      user = decodeURIComponent(parsed.username);
+      password = decodeURIComponent(parsed.password);
+      database = parsed.pathname.replace(/^\//, '') || 'test';
+    } catch (e) {
+      console.warn('[Database Migration] URL parse note:', e.message);
+    }
+  }
 
-  const connectionConfig = databaseUrl
-    ? {
-        uri: databaseUrl,
-        multipleStatements: true,
-        ssl: useSsl ? { rejectUnauthorized: false } : undefined
-      }
-    : {
-        host,
-        port,
-        user,
-        password,
-        database,
-        multipleStatements: true,
-        ssl: useSsl ? { rejectUnauthorized: false } : undefined
-      };
+  const isCloudHost = host.includes('tidbcloud.com') || host.includes('aivencloud.com') || host.includes('rds.amazonaws.com');
+  const useSsl = process.env.DB_SSL === 'true' || isCloudHost || (databaseUrl && databaseUrl.includes('ssl='));
+
+  console.log(`[Database Migration] Initializing tables for MySQL database on ${host}:${port} (${database})...`);
+
+  const connectionConfig = {
+    host,
+    port,
+    user,
+    password,
+    database,
+    multipleStatements: true,
+    ssl: useSsl ? { minVersion: 'TLSv1.2', rejectUnauthorized: false } : undefined
+  };
 
   let dbConn;
   try {
     dbConn = await mysql.createConnection(connectionConfig);
   } catch (err) {
     // If connecting directly failed because the DB doesn't exist yet, try creating it (local MySQL)
-    if (!databaseUrl && (err.code === 'ER_BAD_DB_ERROR' || err.errno === 1049)) {
+    if (!isCloudHost && !databaseUrl && (err.code === 'ER_BAD_DB_ERROR' || err.errno === 1049)) {
       let serverConn;
       try {
         serverConn = await mysql.createConnection({ host, port, user, password });

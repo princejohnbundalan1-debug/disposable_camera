@@ -9,45 +9,71 @@ let sqliteDb = null;
 let isSqliteMode = false;
 
 /**
- * Initializes database connection.
- * Primary: MySQL 8.0+
- * Fallback: Embedded SQLite3 file database if MySQL is not currently running.
+ * Parses connection parameters from DATABASE_URL or discrete environment variables
  */
-async function initDatabase() {
+function getDatabaseConfig() {
   const databaseUrl = process.env.DATABASE_URL;
+  if (databaseUrl && databaseUrl.startsWith('mysql')) {
+    try {
+      const cleanUrl = databaseUrl.split('?')[0];
+      const parsed = new URL(cleanUrl);
+      return {
+        host: parsed.hostname,
+        port: parseInt(parsed.port, 10) || 4000,
+        user: decodeURIComponent(parsed.username),
+        password: decodeURIComponent(parsed.password),
+        database: parsed.pathname.replace(/^\//, '') || 'test',
+        ssl: {
+          minVersion: 'TLSv1.2',
+          rejectUnauthorized: false
+        }
+      };
+    } catch (e) {
+      console.warn('[Database] Could not parse DATABASE_URL with standard URL parser:', e.message);
+    }
+  }
+
   const host = process.env.DB_HOST || 'localhost';
   const port = parseInt(process.env.DB_PORT, 10) || 3306;
   const user = process.env.DB_USER || 'root';
   const password = process.env.DB_PASSWORD || '';
   const database = process.env.DB_NAME || 'wedding_disposable_camera';
-  const useSsl = process.env.DB_SSL === 'true' || (databaseUrl && databaseUrl.includes('ssl='));
+  const isCloudHost = host.includes('tidbcloud.com') || host.includes('aivencloud.com') || host.includes('rds.amazonaws.com');
+  const useSsl = process.env.DB_SSL === 'true' || isCloudHost || (databaseUrl && databaseUrl.includes('ssl='));
+
+  return {
+    host,
+    port,
+    user,
+    password,
+    database,
+    ssl: useSsl ? { minVersion: 'TLSv1.2', rejectUnauthorized: false } : undefined
+  };
+}
+
+/**
+ * Initializes database connection.
+ * Primary: MySQL 8.0+ / TiDB Cloud Serverless
+ * Fallback: Embedded SQLite3 file database if MySQL is not currently running.
+ */
+async function initDatabase() {
+  const dbConfig = getDatabaseConfig();
 
   try {
     // Attempt MySQL connection and migrations
     await runMigrations();
 
-    const poolConfig = databaseUrl
-      ? {
-          uri: databaseUrl,
-          waitForConnections: true,
-          connectionLimit: 10,
-          ssl: useSsl ? { rejectUnauthorized: false } : undefined
-        }
-      : {
-          host,
-          port,
-          user,
-          password,
-          database,
-          waitForConnections: true,
-          connectionLimit: 10,
-          ssl: useSsl ? { rejectUnauthorized: false } : undefined
-        };
-
-    pool = mysql.createPool(poolConfig);
+    pool = mysql.createPool({
+      ...dbConfig,
+      waitForConnections: true,
+      connectionLimit: 10,
+      queueLimit: 0,
+      enableKeepAlive: true,
+      keepAliveInitialDelay: 0
+    });
 
     const conn = await pool.getConnection();
-    console.log(`[Database] MySQL Connection Pool successfully established.`);
+    console.log(`[Database] MySQL Connection Pool successfully established on ${dbConfig.host}:${dbConfig.port} (${dbConfig.database}).`);
     conn.release();
     isSqliteMode = false;
     return pool;
