@@ -33,6 +33,7 @@
 
           <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
             <a href="/auth/register" class="btn btn-primary btn-lg">Create Your Wedding Event 💍</a>
+            <a href="/e/demo-wedding" class="btn btn-outline btn-lg" style="background: white;">Try Live Guest Demo 📸</a>
             <a href="/auth/login" class="btn btn-secondary btn-lg">Organizer Login →</a>
           </div>
         </div>
@@ -86,34 +87,38 @@
           <h2 style="margin-bottom: 1rem;">Designed for Mobile Simplicity</h2>
           <p style="color: var(--color-muted); margin-bottom: 2rem;">
             Big touch-friendly buttons, vintage shutter sounds, flashlight strobe simulation, and video recording right
-            inside mobile Safari and Chrome.
+            inside mobile Safari and Chrome. Click below to try the live demo:
           </p>
 
           <div
-            style="background: #111813; border: 2px solid var(--color-primary); border-radius: 30px; padding: 2.5rem 1.5rem; color: white; box-shadow: var(--shadow-lg); max-width: 380px; margin: 0 auto;">
+            style="background: #111813; border: 2px solid var(--color-primary); border-radius: 30px; padding: 2.5rem 1.5rem; color: white; box-shadow: var(--shadow-lg); max-width: 380px; margin: 0 auto; transition: transform 0.2s ease;">
             <div style="font-size: 1.6rem; margin-bottom: 0.25rem;">💍</div>
             <div style="font-family: var(--font-serif); font-size: 1.4rem; font-weight: 700; color: #F4EDE2;">Hannah &
               Juan</div>
             <div style="font-size: 0.8rem; letter-spacing: 0.15em; color: #A0A0A0; margin-bottom: 1.5rem;">OUR WEDDING •
               SEPTEMBER 01, 2026</div>
 
-            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-              <div
-                style="background: var(--color-primary); color: #111813; padding: 0.9rem; border-radius: 99px; font-weight: 700; font-size: 0.95rem;">
-                📷 Take Photo / Video
-              </div>
-              <div
-                style="background: rgba(255,255,255,0.12); color: white; padding: 0.9rem; border-radius: 99px; font-weight: 600; font-size: 0.95rem;">
+            <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+              <a href="/e/demo-wedding"
+                style="display: block; background: var(--color-primary); color: #111813; padding: 0.95rem; border-radius: 99px; font-weight: 700; font-size: 0.95rem; text-decoration: none; box-shadow: 0 4px 14px rgba(197, 168, 128, 0.4); transition: transform 0.15s ease, filter 0.15s ease;"
+                onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+                📷 Open Disposable Camera
+              </a>
+              <a href="/e/demo-wedding"
+                style="display: block; background: rgba(255,255,255,0.12); color: white; padding: 0.95rem; border-radius: 99px; font-weight: 600; font-size: 0.95rem; text-decoration: none; backdrop-filter: blur(8px); transition: background 0.15s ease, transform 0.15s ease;"
+                onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='scale(1.02)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'; this.style.transform='scale(1)'">
                 ⬆ Upload from Phone
-              </div>
-              <div
-                style="background: rgba(255,255,255,0.12); color: white; padding: 0.9rem; border-radius: 99px; font-weight: 600; font-size: 0.95rem;">
+              </a>
+              <a href="/e/demo-wedding/album"
+                style="display: block; background: rgba(255,255,255,0.12); color: white; padding: 0.95rem; border-radius: 99px; font-weight: 600; font-size: 0.95rem; text-decoration: none; backdrop-filter: blur(8px); transition: background 0.15s ease, transform 0.15s ease;"
+                onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='scale(1.02)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'; this.style.transform='scale(1)'">
                 🖼 View Live Album
-              </div>
-              <div
-                style="background: rgba(255,255,255,0.12); color: white; padding: 0.9rem; border-radius: 99px; font-weight: 600; font-size: 0.95rem;">
+              </a>
+              <a href="/e/demo-wedding/guestbook"
+                style="display: block; background: rgba(255,255,255,0.12); color: white; padding: 0.95rem; border-radius: 99px; font-weight: 600; font-size: 0.95rem; text-decoration: none; backdrop-filter: blur(8px); transition: background 0.15s ease, transform 0.15s ease;"
+                onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='scale(1.02)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'; this.style.transform='scale(1)'">
                 💌 Leave a Wish
-              </div>
+              </a>
             </div>
           </div>
         </div>

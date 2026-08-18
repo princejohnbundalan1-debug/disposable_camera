@@ -128,6 +128,51 @@ async function runMigrations() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
 
+    // 5. Seed default Demo Event if no events exist yet
+    const [existingEvents] = await dbConn.query('SELECT id FROM events WHERE public_id = ? LIMIT 1', ['demo-wedding']);
+    if (existingEvents.length === 0) {
+      const bcrypt = require('bcryptjs');
+      const hash = await bcrypt.hash('WeddingDemo2026!', 10);
+      
+      const [userResult] = await dbConn.query(
+        'INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id)',
+        ['Demo Organizer', 'demo@weddingmoments.app', hash, 'organizer']
+      );
+      
+      const organizerId = userResult.insertId || 1;
+      
+      await dbConn.query(`
+        INSERT IGNORE INTO events 
+        (public_id, organizer_id, name, couple_names, description, event_date, theme_color, is_uploads_enabled, privacy_mode)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `, [
+        'demo-wedding',
+        organizerId,
+        'Hannah & Juan Wedding',
+        'Hannah & Juan',
+        'Welcome to our digital disposable wedding camera! Snap candid photos, short video clips, and leave us a message.',
+        '2026-09-01',
+        '#C5A880',
+        1,
+        'PUBLIC'
+      ]);
+
+      // Seed a friendly sample guest message
+      const [demoEvent] = await dbConn.query('SELECT id FROM events WHERE public_id = ? LIMIT 1', ['demo-wedding']);
+      if (demoEvent.length > 0) {
+        await dbConn.query(`
+          INSERT INTO messages (event_id, guest_name, message, status)
+          VALUES (?, ?, ?, ?)
+        `, [
+          demoEvent[0].id,
+          'Maid of Honor (Elena)',
+          'Wishing Hannah & Juan a lifetime of laughter, joy, and unforgettable adventures! Cheers to the beautiful couple! 🥂✨',
+          'visible'
+        ]);
+      }
+      console.log('[Database Migration] Demo wedding event ("demo-wedding") auto-seeded.');
+    }
+
     console.log('[Database Migration] All tables (users, events, media, messages) verified & migrated successfully.');
   } finally {
     if (dbConn) await dbConn.end();

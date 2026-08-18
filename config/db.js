@@ -162,6 +162,30 @@ async function initSqliteFallback() {
               console.error('[Database SQLite] Error creating tables:', tableErr);
               return reject(tableErr);
             }
+            // Check and seed demo event if needed
+            sqliteDb.get('SELECT id FROM events WHERE public_id = ?', ['demo-wedding'], (checkErr, row) => {
+              if (!row) {
+                const bcrypt = require('bcryptjs');
+                const hash = bcrypt.hashSync('WeddingDemo2026!', 10);
+                sqliteDb.run(
+                  'INSERT OR IGNORE INTO users (id, name, email, password_hash, role) VALUES (1, ?, ?, ?, ?)',
+                  ['Demo Organizer', 'demo@weddingmoments.app', hash, 'organizer'],
+                  () => {
+                    sqliteDb.run(`
+                      INSERT OR IGNORE INTO events 
+                      (id, public_id, organizer_id, name, couple_names, description, event_date, theme_color, is_uploads_enabled, privacy_mode)
+                      VALUES (1, 'demo-wedding', 1, 'Hannah & Juan Wedding', 'Hannah & Juan', 'Welcome to our digital disposable wedding camera! Snap candid photos, short video clips, and leave us a message.', '2026-09-01', '#C5A880', 1, 'PUBLIC')
+                    `, () => {
+                      sqliteDb.run(`
+                        INSERT OR IGNORE INTO messages (event_id, guest_name, message, status)
+                        VALUES (1, 'Maid of Honor (Elena)', 'Wishing Hannah & Juan a lifetime of laughter, joy, and unforgettable adventures! Cheers! 🥂✨', 'visible')
+                      `);
+                    });
+                  }
+                );
+              }
+            });
+
             console.log(`[Database SQLite] Embedded database initialized at ${dbPath}`);
             resolve(sqliteDb);
           });
