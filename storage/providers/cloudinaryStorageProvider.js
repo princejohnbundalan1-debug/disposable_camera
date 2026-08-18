@@ -11,9 +11,12 @@ class CloudinaryStorageProvider {
   constructor() {
     this.fallbackLocal = new LocalStorageProvider();
     this.isConfigured = false;
+    this.ensureConfig();
+  }
 
+  ensureConfig() {
     let rawUrl = (process.env.CLOUDINARY_URL || '').trim();
-    // Clean any accidental "export" or "CLOUDINARY_URL=" prefix or quotes
+    // Clean accidental prefixes or quotes
     rawUrl = rawUrl.replace(/^export\s+/i, '').replace(/^CLOUDINARY_URL\s*=\s*/i, '');
     rawUrl = rawUrl.replace(/^['"]+|['"]+$/g, '').trim();
 
@@ -36,7 +39,6 @@ class CloudinaryStorageProvider {
               secure: true
             });
             this.isConfigured = true;
-            console.log(`[CloudinaryStorageProvider] Configured successfully for cloud: "${cloudName}"`);
           }
         }
       } catch (e) {
@@ -50,11 +52,6 @@ class CloudinaryStorageProvider {
         secure: true
       });
       this.isConfigured = true;
-      console.log(`[CloudinaryStorageProvider] Configured via discrete keys for cloud: "${process.env.CLOUDINARY_CLOUD_NAME.trim()}"`);
-    }
-
-    if (!this.isConfigured) {
-      console.warn('[CloudinaryStorageProvider] Cloudinary credentials not fully recognized, fallback to Local Storage enabled.');
     }
   }
 
@@ -69,9 +66,9 @@ class CloudinaryStorageProvider {
     const isVideo = mimeType && mimeType.startsWith('video');
     const resourceType = isVideo ? 'video' : 'image';
     const folderPath = `wedding_disposable/${folder}`;
-    const cleanPublicId = filename.replace(/\.[^/.]+$/, '');
 
     try {
+      this.ensureConfig();
       if (!this.isConfigured) {
         throw new Error('Cloudinary not configured');
       }
@@ -80,12 +77,11 @@ class CloudinaryStorageProvider {
         const uploadStream = cloudinary.uploader.upload_stream(
           {
             folder: folderPath,
-            public_id: cleanPublicId,
-            resource_type: resourceType,
-            overwrite: true
+            resource_type: resourceType
           },
           (error, result) => {
             if (error) {
+              console.error('[CloudinaryStorageProvider] Upload error:', error.message);
               return reject(error);
             }
             resolve({
